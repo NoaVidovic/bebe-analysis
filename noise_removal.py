@@ -55,7 +55,7 @@ Define cutoffs: either specific for each channel or universal
     !ADJUST!: file input of specific cutoffs, or a single value for the universal cutoff
 """
 if not UNIVERSAL_CUTOFF:  # input from file noise_thresholds_BeBe.txt
-    noise_cutoff = loadtxt('noise_thresholds_{}'.format(S_RUN),
+    noise_cutoff = loadtxt('./thresholds/noise_thresholds_{}'.format(S_RUN),
                            delimiter=': ',
                            dtype={'names': ('adc', 'weight'),
                            'formats': ('i2', 'i2')})
@@ -88,7 +88,7 @@ def is_noise(adc, amplitude, cutoff):
     
         
 """open the file and get the tree"""
-myfile = TFile(f'{S_RUN}.root')  # open
+myfile = TFile(f'./data/{S_RUN}.root')  # open
 # myfile.ls() #check the file contents
 t = myfile.Get(TREE_NAME)   # get the tree
 # t.Print() #check the tree contents    
@@ -97,7 +97,7 @@ t = myfile.Get(TREE_NAME)   # get the tree
 
 """creating the output root file; defining name, output tree, output tree variables, output tree structure
 """
-out_file = TFile(f'{S_RUN}_{S_SUFFIX}.root', "recreate")  # output root file
+out_file = TFile(f'./killnoiseALL/{S_RUN}_{S_SUFFIX}.root', "recreate")  # output root file
 out_t = TTree('tree', f'{S_RUN}_{S_SUFFIX}')  # output tree
 
 

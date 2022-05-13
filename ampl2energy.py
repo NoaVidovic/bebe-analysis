@@ -14,6 +14,7 @@ from ROOT import TFile, TTree
 from numpy import genfromtxt, zeros
 from time import time
 from datetime import timedelta
+from sys import argv
 
 
 """ 
@@ -22,9 +23,9 @@ Define program-wide info
     PARTICLES(True,False), PARTICLE_ENTRY(True,False), EVENT_ENTRY(True,False), dE(True,False), CONFLICT_MARKING (True,False)
     DEBUG(True,False)
 """
-N_RUN = 57
-S_RUN = f'run{N_RUN}_killnoiseALL' # name of the run, string form
-TREE_NAME = 'T' #usually we used names "tree" or "T"
+S_RUN = 'run26' if len(argv) < 2 else argv[1]  # S_RUN is the first argument of the scripts, 'run26' if not given
+S_RUN = f'{S_RUN}_killnoiseALL'
+TREE_NAME = 'tree' #usually we used names "tree" or "T"
 
 COEFF_FILENAME = 'calibALL_dEBe_TMIN2.txt' #txt file with the calibration coefficients
 CALIB = 'TMIN2Be' # the name of the calibration
@@ -47,22 +48,22 @@ else:
     N_ADC = 128
 
 if dE:
-    OUT_RUN = f'run{N_RUN}_NRG({CALIB})' # the name of the output file 
+    OUT_RUN = f'{S_RUN[:5]}_NRG({CALIB})' # the name of the output file 
 else:
-    OUT_RUN = f'run{N_RUN}_NRG({CALIB})E'  # the name of the output file 
+    OUT_RUN = f'{S_RUN[:5]}_NRG({CALIB})E'  # the name of the output file 
 
 """
 A function to follow the status of program execution, gives: elapsed time, estimate of remaining time, number of events evaluated up to that point 
 """
 def print_time(start_time, step, total):
-    elapsed_time = round(time()-start_time)
-    percentage = (i*1.)/n_entries
+    elapsed_time = round(time() - start_time)
+    percentage = step/total
     remaining_time = 0
     if percentage != 0:
         remaining_time = round(elapsed_time * (1-percentage)/percentage)
         remaining_time = timedelta(0, remaining_time)
     elapsed_time = timedelta(0, elapsed_time)
-    print("{:.1f}%, elapsed {}, remaining {}, event {} out of {} ".format(percentage*100, elapsed_time, remaining_time, i, n_entries))
+    print(f"{percentage*100:.1f}%, elapsed {elapsed_time}, remaining {remaining_time}, event {step} out of {total}")
     
 """
 A function to calculate energies out of amplitudes and calibration coefficients
@@ -75,14 +76,14 @@ def amplitude_2_energy(ampl, slope, intercept):
 """ EXCECUTION """ 
 
 """open the file and get the tree"""
-myfile = TFile(f'{S_RUN}.root')  # open
+myfile = TFile(f'./killnoiseALL/{S_RUN}.root')  # open
 # myfile.ls() #check the file contents
 t = myfile.Get(TREE_NAME)   # get the tree
 # t.Print() #check the tree contents    
 
 """creating the output root file; defining name, output tree, output tree variables, output tree structure """
-out_file = TFile(f'{OUT_RUN}.root', "recreate")  # output root file
-out_t = TTree('T', f'{OUT_RUN}.root')  # output tree
+out_file = TFile(f'./nrg/{OUT_RUN}.root', "recreate")  # output root file
+out_t = TTree('tree', f'{OUT_RUN}.root')  # output tree
 
 # output tree variables
 # variables that exist in the starting tree
@@ -108,30 +109,34 @@ if not PARTICLES:
     out_t.Branch('adc', adc, 'adc[mult]/S')  # channel number branch, field of lenght "mult"
     out_t.Branch('ampl', ampl, 'ampl[mult]/S')  # amplitude branch, field of lenght "mult"
     out_t.Branch('nrg', nrg, 'nrg[mult]/D')  # energy branch, field of lenght "mult"
-if PARTICLES:
+else:
     out_t.Branch('event', event, 'event/I')  # event number branch
     out_t.Branch('cnc', cnc, 'cnc/S')  # coincidences branch
     out_t.Branch('mult', mult, 'mult/S')  # multiplicity branch
+
     if PARTICLE_ENTRY:  
         out_t.Branch('adc', adc, 'adc[3]/S')  # channel number branch, field of lenght 3
         out_t.Branch('ampl', ampl, 'ampl[3]/S')  # amplitude branch, field of lenght 3
         out_t.Branch('nrg', nrg, 'nrg[3]/D')  # energy branch, field of lenght 3
         out_t.Branch('detector', detector, 'detector/S')  # detector branch
+
     if EVENT_ENTRY: 
         out_t.Branch('adc', adc, 'adc[mult]/S')  # channel number branch, field of lenght "mult"
         out_t.Branch('ampl', ampl, 'ampl[mult]/S')  # amplitude branch, field of lenght "mult"
         out_t.Branch('nrg', nrg, 'nrg[mult]/D')  # energy branch, field of lenght "mult"
         out_t.Branch('detector', detector, 'detector[cnc]/S')  # detector branch, field of lenght "cnc"
+
     if CONFLICT_MARKING:
         out_t.Branch('conflicts', conflicts, 'conflicts/S')  #conflict branch
+
     if INTERSTRIP_MARKING:
         out_t.Branch('interstrip', interstrip, 'interstrip/S')  #interstrip branch
 
 """ open the calibration file and get the calibration coefficients
 turning a txt file into a field fit_coeff[0, ...., n-1], n= number of lines; one line of txt file is one subfield  """
 
-fit_coeff = genfromtxt(COEFF_FILENAME,
-                       dtype=[('adc', '<i4'), ('slope', '<f4'), ('intercept', '<f4')])
+fit_coeff = genfromtxt(COEFF_FILENAME, dtype=[('adc', '<i4'), ('slope', '<f4'), ('intercept', '<f4')])
+
 if DEBUG:
     print(fit_coeff)
 
@@ -140,12 +145,11 @@ if DEBUG:
 n_entries = t.GetEntriesFast()  # get the  number of entries in the tree
 if DEBUG:
     print('number of entries: ', n_entries)
-    n_entries = 30
+    # n_entries = 30
 
 start_time = time()  #start the timer
 
 for i in range(n_entries):  # for: 0 to n_entries-1 
-
     if i % 10000 == 0:  # print the timer info every 10000 entries
         print_time(start_time, i, n_entries)
         
@@ -156,19 +160,22 @@ for i in range(n_entries):  # for: 0 to n_entries-1
     if PARTICLES:
         event[0] = t.event  # copying the cardinal number of the event
         cnc[0] = t.cnc  # copying the number of coincidences in an event
+
         if CONFLICT_MARKING:
             conflicts[0] = t.conflicts  # copying the number of conflicts in an event
+
         if INTERSTRIP_MARKING:
             interstrip[0] = t.interstrip  # copying the number of conflicts in an event
-    
-    if not PARTICLES:
+    else:
         for i in range(mult[0]):
             adc[i] = t.wadc[i]  # copying the channel number of hits in an event, change of variable name from "wadc" to "adc"
             ampl[i] = t.wampl[i]  # copying the amplitude of hits in an event, change of variable name from "wampl" to "ampl"
+
             if t.wadc[i] <= N_ADC:  # going trough the channels for which we have the calibration
                 # calculating the energy
                 coeff = fit_coeff[t.wadc[i]-1]  #the appropriate coefficients for the channel
                 nrg[i] = amplitude_2_energy(t.wampl[i], coeff[1], coeff[2])
+
                 if DEBUG:
                     print(f'Energy calculation: {nrg[i]}, Ampl: {ampl[i]}, Coeff: {fit_coeff[t.wadc[i]-1]}, Adc: {adc[i]}')
             else:
@@ -184,6 +191,7 @@ for i in range(n_entries):  # for: 0 to n_entries-1
                 nrg[i] = amplitude_2_energy(t.wampl[i], coeff[1], coeff[2])
             else:
                 nrg[i] = 0
+
     if EVENT_ENTRY:
         for i in range(cnc[0]):  #there is "cnc" particles in an event(entry)
             detector[i] = t.detector[i]
@@ -199,10 +207,10 @@ for i in range(n_entries):  # for: 0 to n_entries-1
     # write an entry into the output tree
     if DEBUG:  #output check
         num = mult[0]
-        if not PARTICLE_ENTRY:
-            print('Entry: ', num, adc[:num], ampl[:num], nrg[:num])
-        else:
+        if PARTICLE_ENTRY:
             print('Entry: ', num, adc[:3], ampl[:3], nrg[:3])
+        else:
+            print('Entry: ', num, adc[:num], ampl[:num], nrg[:num])
     
     out_t.Fill()
          

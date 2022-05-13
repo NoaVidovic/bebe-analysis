@@ -23,7 +23,7 @@ ROLLING_AVG_HALF_WIDTH = 5  # how many points ahead of and behind the avg center
 q = Queue()  # stores the return data from the count function
 
 # open file and get tree
-file = TFile(f'{S_RUN}.root')
+file = TFile(f'./data/{S_RUN}.root')
 t = file.Get(TREE_NAME)
 n_entries = t.GetEntriesFast()
 file.Close()
@@ -49,7 +49,7 @@ Given the start and end point of the data, returns the amplitudes of all the rec
 def count(start, end):
     # loads the raw data root file in once per thread
     # some systems may experience RAM issues when trying to run too many threads
-    root_file = TFile(f'{S_RUN}.root')
+    root_file = TFile(f'./data/{S_RUN}.root')
     tree = root_file.Get(TREE_NAME)
 
     arr = [ [] for i in range(N_ADC) ]
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     # outputs the calculated thresholds to a file to be used for noise filtering
     print('Writing thresholds...')
     time1 = time()
-    with open(f'noise_thresholds_{S_RUN}', 'w') as f:
+    with open(f'./thresholds/noise_thresholds_{S_RUN}', 'w') as f:
         for i, t in enumerate(thresholds):
             f.write(f'{i+1}: {t}\n')
 
