@@ -45,10 +45,18 @@ def print_time(start_time, step, total):
 
 #lower and upper limit of included strips, upper limit not included in output (for using just one strip, lower limit is "i" and upper "i+1") 
 #when we match with the front for the same detector, we usually use all back strips of that detector while matching front and dE strips
+for x in range(17, 129, 32):
+    if front in range(x, x+16):
+        print('Error: detector number is a back detector.')
+        exit(0)
+
+if front >= 129:
+    print('Error: detector number is a dE detector.')
+    exit(0)
+
 back_low = (front//16 + 1) * 16 + 1
 back_high = back_low + 16
-
-lst_back = range(back_low,back_high)
+lst_back = range(back_low, back_high)
 
 
 """  
@@ -154,7 +162,7 @@ print('Writing amplitude pairs into a file')
 
 keys = sorted(dE_detectors.keys(), key=lambda x: dE_detectors[x], reverse=True)
 s = f'{front}\t{keys[0]}'
-for i in range(1, len(keys)):
+for i in range(1, 4):
     if dE_detectors[keys[i]] == 0 or dE_detectors[keys[i-1]]/dE_detectors[keys[i]] > 6:
         s += '\n'
         break
