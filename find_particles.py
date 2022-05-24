@@ -90,7 +90,7 @@ DETECTORS_STRIPS_MATRIX = matrix([
                                  ])
                     
                     
-OUT_RUN = f'{S_RUN}_NRG({CALIB})_particles({S_SUFFIX}, {S_SUFFIX2})'
+OUT_RUN = f'{S_RUN}_particles({S_SUFFIX},{S_SUFFIX2})'
 
                     
                     
