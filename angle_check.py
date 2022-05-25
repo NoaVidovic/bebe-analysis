@@ -37,20 +37,14 @@ OUT_RUN = f'./angle_check/angle_check_{REACTION}_run{run_start}-{run_end}_TMIN2B
 
 
 
-""" defining detectors used """
-det1 = 1
-det2 = 3
-det3 = 4
-
-
 
 """ Defining histograms""" 
-h12 = TH1F('theta1+theta2_AB','theta1+theta2 in two particle detections, detectors A and B', 1000, 30, 130)
-h13 = TH1F('theta1+theta2_AC','theta1+theta2 in two particle detections, detectors A and C', 1000, 30, 130)
-h14 = TH1F('theta1+theta2_AD','theta1+theta2 in two particle detections, detectors A and D', 1000, 30, 130)
-h23 = TH1F('theta1+theta2_BC','theta1+theta2 in two particle detections, detectors B and C', 1000, 30, 130)
-h24 = TH1F('theta1+theta2_BD','theta1+theta2 in two particle detections, detectors B and D', 1000, 30, 130)
-h34 = TH1F('theta1+theta2_CD','theta1+theta2 in two particle detections, detectors C and D', 1000, 30, 130)
+h12 = TH1F('theta1-theta2_AB','|theta1-theta2| in two particle detections, detectors A and B (same side)', 1300, 0, 130)
+h13 = TH1F('theta1+theta2_AC','theta1+theta2 in two particle detections, detectors A and C (opposite sides)', 1300, 0, 130)
+h14 = TH1F('theta1+theta2_AD','theta1+theta2 in two particle detections, detectors A and D (opposite sides)', 1300, 0, 130)
+h23 = TH1F('theta1+theta2_BC','theta1+theta2 in two particle detections, detectors B and C (opposite sides)', 1300, 0, 130)
+h24 = TH1F('theta1+theta2_BD','theta1+theta2 in two particle detections, detectors B and D (opposite sides)', 1300, 0, 130)
+h34 = TH1F('theta1-theta2_CD','|theta1-theta2| in two particle detections, detectors C and D (same side)', 1300, 0, 130)
 
 
 
@@ -98,19 +92,19 @@ for s_run in S_RUN_LIST:
         if t.cnc == 2: #fill with coincident detections
             if t.detector[0] == 1:
                 if t.detector[1] == 2:
-                    h12.Fill(t.theta[0] + t.theta[1])
+                    h12.Fill(abs(t.theta[0] - t.theta[1]))
                 elif t.detector[1] == 3:
                     h13.Fill(t.theta[0] + t.theta[1])
                 elif t.detector[1] == 4:
                     h14.Fill(t.theta[0] + t.theta[1])
             elif t.detector[0] == 2:
                 if t.detector[1] == 3:
-                    h23.Fill(t.theta[0] + t.theta[1])
-                elif t.detector[1] == 4:
+                    h23.Fill(t.theta[0] + t.theta[1])  
+                if t.detector[1] == 4:
                     h24.Fill(t.theta[0] + t.theta[1])
             elif t.detector[0] == 3:
                 if t.detector[1] == 4:
-                    h34.Fill(t.theta[0] + t.theta[1])
+                    h34.Fill(abs(t.theta[0] - t.theta[1]))
                     
 f = TFile(OUT_RUN, 'recreate')  
 h12.Write()
