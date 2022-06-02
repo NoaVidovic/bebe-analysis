@@ -98,7 +98,7 @@ ideally we would just "get" cuts inside the particle loops, but this creates a m
 
 """ 
 # 1. open the cut file
-f = TFile('cut_9Be+9Be(run18-30)_single_dE-Eampl_detABCD.root') #master file with cuts for all particles and strip pairs
+f = TFile('./hist_particles/cut_9Be+9Be(run18-30)_single_dE-Eampl_detABCD.root') #master file with cuts for all particles and strip pairs
 
 # 2. get the cuts
 front_list = sum([ list(range(x, x+16)) for x in range(1, 100, 32) ], [])
@@ -146,7 +146,7 @@ def print_time(start_time, step, total):
 """ EXCECUTION """ 
        
 """open the file and get the tree"""
-myfile = TFile(f'{S_RUN}.root') #open
+myfile = TFile(f'./angles/{S_RUN}.root') #open
 if DEBUG:
     myfile.ls() #check the file contents
 
