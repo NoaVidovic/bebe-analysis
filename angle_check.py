@@ -28,12 +28,13 @@ run_end = 'run30' if len(argv) < 3 else argv[2]
 run_start = int(run_start[3:])
 run_end = int(run_end[3:])
 
-S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)' for n_run in range(run_start, run_end+1) ]
+S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)(E=E,F1-4)_CUT' for n_run in range(run_start, run_end+1) ]
                 
-CALIB = 'TMIN2Be' #string to mark the used calibration
-REACTION = '9Be+9Be'  #projectile and target
+CALIB = 'TMIN2Be' # string to mark the used calibration
+REACTION = '9Be+9Be'  # projectile and target
+PARTICLES = '9Be9Be'  # particles that the script filters for
 
-OUT_RUN = f'./angle_check/angle_check_{REACTION}_run{run_start}-{run_end}_TMIN2Be_particles(E=E,F1-4).root'
+OUT_RUN = f'./angle_check/angle_check_{REACTION}_run{run_start}-{run_end}_TMIN2Be_particles(E=E,F1-4)_{PARTICLES}.root'
 
 
 
@@ -69,7 +70,7 @@ def print_time(start_time, step, total):
 
 for s_run in S_RUN_LIST:
     # open the file
-    myfile = TFile(f'./angles/{s_run}.root')
+    myfile = TFile(f'./ptype/{s_run}.root')
     #myfile.ls()
     t = myfile.Get('tree')
     print(f"reading file {s_run}.root...")
@@ -90,21 +91,22 @@ for s_run in S_RUN_LIST:
         t.GetEntry(i) # get an entry
         
         if t.cnc == 2: #fill with coincident detections
-            if t.detector[0] == 1:
-                if t.detector[1] == 2:
-                    h12.Fill(abs(t.theta[0] - t.theta[1]))
-                elif t.detector[1] == 3:
-                    h13.Fill(t.theta[0] + t.theta[1])
-                elif t.detector[1] == 4:
-                    h14.Fill(t.theta[0] + t.theta[1])
-            elif t.detector[0] == 2:
-                if t.detector[1] == 3:
-                    h23.Fill(t.theta[0] + t.theta[1])  
-                if t.detector[1] == 4:
-                    h24.Fill(t.theta[0] + t.theta[1])
-            elif t.detector[0] == 3:
-                if t.detector[1] == 4:
-                    h34.Fill(abs(t.theta[0] - t.theta[1]))
+            if t.ptype[0] == 409 and t.ptype[1] == 409:
+                if t.detector[0] == 1:
+                    if t.detector[1] == 2:
+                        h12.Fill(abs(t.theta[0] - t.theta[1]))
+                    elif t.detector[1] == 3:
+                        h13.Fill(t.theta[0] + t.theta[1])
+                    elif t.detector[1] == 4:
+                        h14.Fill(t.theta[0] + t.theta[1])
+                elif t.detector[0] == 2:
+                    if t.detector[1] == 3:
+                        h23.Fill(t.theta[0] + t.theta[1])  
+                    if t.detector[1] == 4:
+                        h24.Fill(t.theta[0] + t.theta[1])
+                elif t.detector[0] == 3:
+                    if t.detector[1] == 4:
+                        h34.Fill(abs(t.theta[0] - t.theta[1]))
                     
 f = TFile(OUT_RUN, 'recreate')  
 h12.Write()

@@ -9,10 +9,11 @@ This is a script that takes the graphical cuts made on dE-E graphs and uses them
 """
 
 """ import predefined functions """
-from ROOT import TFile,TTree
-from time import time
 from datetime import timedelta
 from numpy import zeros
+from sys import argv
+from time import time
+from ROOT import TFile, TTree, TCutG
 
 
 """ 
@@ -53,33 +54,37 @@ INTERSTRIP_MARKING = True  # do we have potentital interstrip particles marked
 #all the particles that we are naming i.e. that we have the graphical cuts for
 He4 = True
 He6 = True
-Li6 = False
-Li7 = False
-Be9 = False
-Be10 = False
+Li6 = True
+Li7 = True
+Li8 = True
+Be9 = True
+Be10 = True
 
 particles = []
-markings:
+markings = {}
 included_particles = ''
 
 if He4:
-    particles.append('He4')
-    markings['He4'] = 204
+    particles.append('4He')
+    markings['4He'] = 204
 if He6:
-    particles.append('He6')
-    markings['He6'] = 206
+    particles.append('6He')
+    markings['6He'] = 206
 if Li6:
-    particles.append('Li6')
-    markings['Li6'] = 306
+    particles.append('6Li')
+    markings['6Li'] = 306
 if Li7:
-    particles.append('Li7')
-    markings['Li7'] = 307
+    particles.append('7Li')
+    markings['7Li'] = 307
+if Li8:
+    particles.append('8Li')
+    markings['8Li'] = 308
 if Be9:
-    particles.append('Be9')
-    markings['Be9'] = 409
+    particles.append('9Be')
+    markings['9Be'] = 409
 if Be10:
-    particles.append('Be10')
-    markings['Be10'] = 410
+    particles.append('10Be')
+    markings['10Be'] = 410
     
 #do we also have cuts for the second best geometrical matches of dE and E
 MATCHES = 's'
@@ -88,7 +93,7 @@ MATCHES = 's'
 cutAMPL = True  # True if cut on AMPL, False if cut on NRG
 
 # the name of the output file 
-PTYPE = f'ptype({",".join(particles)})(E=E,F1-4)'
+PTYPE = f'ptype({",".join(particles)})'
 OUT_RUN = f'{S_RUN}_{PTYPE}_CUT'
 
 
@@ -98,14 +103,18 @@ ideally we would just "get" cuts inside the particle loops, but this creates a m
 
 """ 
 # 1. open the cut file
-f = TFile('./hist_particles/cut_9Be+9Be(run18-30)_single_dE-Eampl_detABCD.root') #master file with cuts for all particles and strip pairs
+f = TFile('./hist_particles/cuts.root') #master file with cuts for all particles and strip pairs
 
 # 2. get the cuts
 front_list = sum([ list(range(x, x+16)) for x in range(1, 100, 32) ], [])
 
 # outer dictionary: first key is particle type, pointing to another dictionary
 # inner dictionary: key is front strip, pointing to the appropriate cut
-cuts = { p: { i: f.Get(f'{i}{MATCHES}_{p};1') for i in front_list } for p in particles }
+cuts = { p: { i: f.Get(f'{i}{MATCHES}_{p}') for i in front_list } for p in particles }
+for p in particles:
+    for i in front_list:
+        if type(cuts[p][i]) is not TCutG:
+            print(f'{i}{MATCHES}_{p}: MISSING')
 f.Close()
 
 #pairs of front and dE strips with best and 2nd best geometrical match             
@@ -155,7 +164,7 @@ if DEBUG:
     t.Print() #check the tree contents
     
 """creating the output root file; defining name, output tree, output tree variables, output tree structure """
-out_file = TFile(f'{OUT_RUN}.root', 'recreate') # output root file
+out_file = TFile(f'./ptype/{OUT_RUN}.root', 'recreate') # output root file
 out_t = TTree('tree', f'{OUT_RUN}.root') # output tree
 
 
@@ -179,7 +188,6 @@ phi = zeros(MAX_PARTICLES_ENTRY, dtype='float') # angle from the target to the p
 #new variables  
 ptype = zeros(MAX_PARTICLES_ENTRY, dtype='short')# marking of the particle type, value of type Short
 
-# output tree structure; adding new branches
 out_t.Branch('event', event, 'event/I') # event number branch
 out_t.Branch('cnc', cnc, 'cnc/S') # coincidences branch    
 out_t.Branch('mult',mult,'mult/S') # multiplicity branch  
@@ -254,7 +262,7 @@ for i in range(n_entries):
                 
         #adding the particle type info
         ptype[0] = 0     
-        #if particles do not belong to the matched strip pairs
+        #if particles belong to the matched strip pairs
         if t.adc[dE_counter] in list_pairs[t.adc[front_counter]]:
             if cutAMPL:
                 x, y = t.ampl[front_counter], t.ampl[dE_counter] 
@@ -262,9 +270,15 @@ for i in range(n_entries):
                 x, y = t.nrg[front_counter], t.nrg[dE_counter]
 
             for p in particles:
-                if cuts[p][t.adc[front_counter]].IsInside(x, y):
-                    ptype[0] = markings[p]
-                    break
+                c = cuts[p][t.adc[front_counter]]
+                if type(c) is TCutG:
+                    if c.IsInside(x, y):
+                        ptype[0] = markings[p]
+                        break
+                else:
+                    pass
+                    # print(p, t.adc[front_counter])
+                
                 
         out_t.Fill() # filling the out tree; particle is the output entry
     else:
@@ -291,9 +305,14 @@ for i in range(n_entries):
                     x, y = t.nrg[front_counter], t.nrg[dE_counter]
 
                 for p in particles:
-                    if cuts[p][t.adc[front_counter]].IsInside(x, y):
-                        ptype[i] = markings[p]
-                        break
+                    c = cuts[p][t.adc[front_counter]]
+                    if type(c) is TCutG:
+                        if c.IsInside(x, y):
+                            ptype[i] = markings[p]
+                            break
+                    else:
+                        pass
+                        # print(p, t.adc[front_counter])
         
         #copying adc, ampl and energy info from the previous run            
         for j in range(mult[0]):
