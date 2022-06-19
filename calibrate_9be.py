@@ -30,40 +30,14 @@ Define program-wide info
 DEBUG = False
 
 S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
-
-if len(argv) < 2:
-    ptype_DET = 409
-    STRIP_USED = 47
-else:
-    a1 = int(argv[1])
-    if a1 <= 200:
-        STRIP_USED = a1
-        ptype_DET = 409
-    else:
-        ptype_DET = a1
-        STRIP_USED = 47 if len(argv) < 3 else int(argv[2])
-
-print(ptype_DET, STRIP_USED)
-
+ptype_DET = 409 if len(argv) < 2 else int(argv[1])
+STRIP_USED = 47 if len(argv) < 3 else int(argv[2])
 TREE_NAME = 'tree' #usually we used names "tree" or "T"
 
 STRIP_HITS = False #do we count the number of hits in different strips
 if STRIP_HITS:
     strip_hits = {}
 
-""" REACTION DETAILS """
-#choosing the projectile-target composition
-Be9_Be9 = True
-
-#choosing the reaction channel
-if Be9_Be9:
-    Ex8Be = False
-    Ex9Be = True
-    Ex10B = False
-    Ex11B = False
-    Ex12B = False
-    Ex12C = False
-    Ex14C = False
 
 """ 
 9Be+9Be projectile-target composition
@@ -76,86 +50,85 @@ REACTION CHANNELS:
     9Be(9Be,6He)12C, 12C Excitation
     9Be(9Be,4He)14C, 14C Excitation
 """
-if Be9_Be9:
-    Energy_PROJECTILE_HALFtarget = 53.778 #projectile energy at half target where the reaction approximately occurs
-    Mass_PROJECTILE = 9.0    #projectile mass
-    Name_PROJECTILE = '9Be' #name of the projectile
-    Name_TARGET = '9Be' #name of the target
-    Energy_BEAM = '54' #projectile energy before entering the target
+Energy_PROJECTILE_HALFtarget = 53.778 #projectile energy at half target where the reaction approximately occurs
+Mass_PROJECTILE = 9.0    #projectile mass
+Name_PROJECTILE = '9Be' #name of the projectile
+Name_TARGET = '9Be' #name of the target
+Energy_BEAM = '54' #projectile energy before entering the target
 
-    #9Be(9Be,10Be)8Be reaction
-    if ptype_DET == 410:
-        Mass_DET = 10.0 #mass of the detected particle
-        Name_DET = '10Be' #name of the detected particle
-        
-        Q0 = 5.147 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 8.0 #mass of the undetected particle
-        Name_UNDET = '8Be'  #name of the undetected particle 
+#9Be(9Be,10Be)8Be reaction
+if ptype_DET == 410:
+    Mass_DET = 10.0 #mass of the detected particle
+    Name_DET = '10Be' #name of the detected particle
+    
+    Q0 = 5.147 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 8.0 #mass of the undetected particle
+    Name_UNDET = '8Be'  #name of the undetected particle 
 
-    #9Be(9Be,9Be)9Be reaction
-    elif ptype_DET == 409:
-        Mass_DET = 9.0 #mass of the detected particle
-        Name_DET = '9Be' #name of the detected particle
-        
-        Q0 = 0.0 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 9.0 #mass of the undetected particle
-        Name_UNDET = '9Be'  #name of the undetected particle
-        
-    #9Be(9Be,8Li)10B reaction       
-    elif ptype_DET == 308:
-        Mass_DET = 8.0 #mass of the detected particle
-        Name_DET = '8Li' #name of the detected particle
-        
-        Q0 = -10.299 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 10.0 #mass of the undetected particle
-        Name_UNDET = '10B'  #name of the undetected particle
+#9Be(9Be,9Be)9Be reaction
+elif ptype_DET == 409:
+    Mass_DET = 9.0 #mass of the detected particle
+    Name_DET = '9Be' #name of the detected particle
+    
+    Q0 = 0.0 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 9.0 #mass of the undetected particle
+    Name_UNDET = '9Be'  #name of the undetected particle
+    
+#9Be(9Be,8Li)10B reaction       
+elif ptype_DET == 308:
+    Mass_DET = 8.0 #mass of the detected particle
+    Name_DET = '8Li' #name of the detected particle
+    
+    Q0 = -10.299 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 10.0 #mass of the undetected particle
+    Name_UNDET = '10B'  #name of the undetected particle
 
-    #9Be(9Be,7Li)11B reaction         
-    elif ptype_DET == 307:
-        Mass_DET = 7.0 #mass of the detected particle
-        Name_DET = '7Li' #name of the detected particle
-        
-        Q0 = -0.877 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 11.0 #mass of the undetected particle
-        Name_UNDET = '11B'  #name of the undetected particle        
+#9Be(9Be,7Li)11B reaction         
+elif ptype_DET == 307:
+    Mass_DET = 7.0 #mass of the detected particle
+    Name_DET = '7Li' #name of the detected particle
+    
+    Q0 = -0.877 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 11.0 #mass of the undetected particle
+    Name_UNDET = '11B'  #name of the undetected particle        
 
-    #9Be(9Be,6Li)12B reaction
-    elif ptype_DET == 306:
-        Mass_DET = 6.0 #mass of the detected particle
-        Name_DET = '6Li' #name of the detected particle
-        
-        Q0 = -4.759 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 12.0 #mass of the undetected particle
-        Name_UNDET = '12B'  #name of the undetected particle
+#9Be(9Be,6Li)12B reaction
+elif ptype_DET == 306:
+    Mass_DET = 6.0 #mass of the detected particle
+    Name_DET = '6Li' #name of the detected particle
+    
+    Q0 = -4.759 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 12.0 #mass of the undetected particle
+    Name_UNDET = '12B'  #name of the undetected particle
 
-    #9Be(9Be,6He)12C reaction
-    elif ptype_DET == 206:
-        Mass_DET = 6.0 #mass of the detected particle
-        Name_DET = '6He' #name of the detected particle
-        
-        Q0 = 5.104   #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 12.0 #mass of the undetected particle
-        Name_UNDET = '12C'  #name of the undetected particle
-        
-    #9Be(9Be,4He)14C reaction
-    elif ptype_DET == 204:
-        Mass_DET = 4.0 #mass of the detected particle
-        Name_DET = '4He' #name of the detected particle
-        
-        Q0 = 17.252  #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 14.0 #mass of the undetected particle
-        Name_UNDET = '14C'  #name of the undetected particle
+#9Be(9Be,6He)12C reaction
+elif ptype_DET == 206:
+    Mass_DET = 6.0 #mass of the detected particle
+    Name_DET = '6He' #name of the detected particle
+    
+    Q0 = 5.104   #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 12.0 #mass of the undetected particle
+    Name_UNDET = '12C'  #name of the undetected particle
+    
+#9Be(9Be,4He)14C reaction
+elif ptype_DET == 204:
+    Mass_DET = 4.0 #mass of the detected particle
+    Name_DET = '4He' #name of the detected particle
+    
+    Q0 = 17.252  #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
+    
+    Mass_UNDET = 14.0 #mass of the undetected particle
+    Name_UNDET = '14C'  #name of the undetected particle
 
-    else:
-        print('Invalid reaction channel')
-        exit(0)
+else:
+    print('Invalid reaction channel')
+    exit(0)
 
         
 """ Choosing which particles to use
@@ -165,7 +138,6 @@ We can do this by filtering through one or more options depending on the wanted 
     - strip pairs; choose which strip pairs to use
  """
 DETECTORS = True #do we filter by detectors
-STRIP_RANGE = True #do we filter by strip range
 MATCHES = 's'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
@@ -178,12 +150,8 @@ if DETECTORS:
     filters_used.append(detectors_used_s)
 
 #bottom and upper front and dE strip number that we let into further calculation                
-if STRIP_RANGE:
-    front_low, front_high = STRIP_USED, STRIP_USED
-    dE_low, dE_high = 145,160
-    
-    strip_range_s = f'E=[{front_low},{front_high}],dE=[{dE_low},{dE_high}]_'
-    filters_used.append(strip_range_s)
+strip_range_s = f'E=[{STRIP_USED}]_'
+filters_used.append(strip_range_s)
 
 
 #best matched strip pairs    
@@ -210,11 +178,21 @@ with open('matching', 'r') as f:
 
     filters_used.append(strip_pairs_s)
 
+strip_corr_pars = {}
+with open('strip_9be_correction', 'r') as f:
+    for l in f.readlines():
+        l = l.split()
+
+        strip = int(l[0])
+        pars = [ float(x) for x in l[1:] ]
+
+        strip_corr_pars[strip] = pars
+
 
 # the name of the output file 
 output_suffix = ''.join(filters_used)
 
-out_name = f"single_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
+out_name = f"single_corr_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
 
         
 """ Defining histograms"""
@@ -232,6 +210,7 @@ res_theta, low_theta, high_theta  = 550, 10, 65 #0.1 degrees resolution
 h0 = TH1F('AMPLdet', f"Amplitude {Name_DET}", res_ampl, low_ampl, high_ampl) # amplitude of the detected particle in the front E detector
 h = TH1F('Edet_nrg', f"Energies in E detector of {Name_DET}", res_energy_detected, low_energy_detected, high_energy_detected ) # energy of the detected particle in the front E detector
 h1 = TH1F('Edet_cnrg', f"Total energies of {Name_DET}", res_energy_detected, low_energy_detected, high_energy_detected ) # total (corrected) energy of the detected particle
+h1_c = TH1F('E\'det_cnrg', f"Total energies of {Name_DET} (corrected)", res_energy_detected, low_energy_detected, high_energy_detected ) # total (corrected) energy of the detected particle
 h2 = TH2S('dE-E_ampl', f"deltaE-E amplitudes of {Name_DET}", res_ampl, low_ampl, high_ampl, res_ampl, low_ampl, high_ampl) # dE-E amplitued graph of detected particles
 h2.SetOption("COLZ") # contrast scale
 h3 = TH2S('dE-E', f"deltaE-E energies of {Name_DET}", res_energy_E, low_energy_E, high_energy_E, res_energy_dE, low_energy_dE, high_energy_dE) # dE-E energy graph of detected particles
@@ -241,6 +220,11 @@ h4 = TH1F('Ex', f'Ex({Name_UNDET}) from {Name_DET} single detections, Beam {Name
 h5 = TH2S('Ex-theta', f"theta - Ex({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
 h5_c = TH2S('Ex-theta_colour', f"theta - Ex({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h5_c.SetOption("COLZ") # contrast scale
+
+h6 = TH1F('Ex\'', f'Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
+h7 = TH2S('Ex\'-theta', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
+h7_c = TH2S('Ex\'-theta_colour', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
+h7_c.SetOption("COLZ") # contrast scale
 
 
 
@@ -330,7 +314,7 @@ for s_run in S_RUN_LIST:
             continue
         
         #don't include particles that are not in the strip range that we want to use
-        if STRIP_RANGE and not (dE_low <= t.adc[dE_number] <= dE_high and front_low <= t.adc[front_number] <= front_high):
+        if t.adc[front_number] != STRIP_USED:
             continue
         
         #don't include particles that are not in the strip pairs
@@ -341,15 +325,23 @@ for s_run in S_RUN_LIST:
 
         #calculate the excitation energy of the undetected particle
         Ex = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, t.cnrg[0], np.deg2rad(t.theta[0]))
+        a, b = strip_corr_pars[STRIP_USED]
+
+        Ex_ = a*Ex + b
+        E_ = (2-a)*t.cnrg[0] - b
          
         h0.Fill(t.ampl[0]) # amplitude of the detected particle in the front E detector
         h.Fill(t.nrg[0]) # energy of the detected particle in the front E detector
         h1.Fill(t.cnrg[0]) # total (corrected) energy of the detected particle
+        h1_c.Fill(E_)  # total (corrected corrected) energy of the detected particle
         h2.Fill(t.ampl[0],t.ampl[2]) # dE-E amplitued graph of detected particles
         h3.Fill(t.nrg[0],t.nrg[2])  # dE-E energy graph of detected particles
         h4.Fill(Ex) #Excitation energy of the undetected particle
-        h5.Fill(Ex,t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h5_c.Fill(Ex,t.theta[0]) # COLOUR version of h5
+        h5.Fill(Ex, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h5_c.Fill(Ex, t.theta[0]) # COLOUR version of h5
+        h6.Fill(Ex_) #Excitation energy of the undetected particle
+        h7.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h7_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
         
         if STRIP_HITS:
             for i in range(t.mult):
@@ -367,11 +359,15 @@ g = TFile(f"./singles/{out_name}.root", "recreate")
 h0.Write()
 h.Write()
 h1.Write()
+h1_c.Write()
 h2.Write()
 h3.Write()
 h4.Write()
 h5.Write()
 h5_c.Write()
+h6.Write()
+h7.Write()
+h7_c.Write()
 g.Close()
 print(f"Excitation of {Name_UNDET} from the detection of {Name_DET}, Filters: {output_suffix}  Run: 18-30")
 print("The number of single detections in the input runs:", counter_particles_single)
