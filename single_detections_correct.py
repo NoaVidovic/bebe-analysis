@@ -31,19 +31,8 @@ DEBUG = False
 
 S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
 
-if len(argv) < 2:
-    ptype_DET = 409
-    STRIP_USED = 47
-else:
-    a1 = int(argv[1])
-    if a1 <= 200:
-        STRIP_USED = a1
-        ptype_DET = 409
-    else:
-        ptype_DET = a1
-        STRIP_USED = 47 if len(argv) < 3 else int(argv[2])
-
-print(ptype_DET, STRIP_USED)
+ptype_DET = 409 if len(argv) < 2 else int(argv[1])
+STRIP_USED = 47 if len(argv) < 3 else int(argv[2])
 
 TREE_NAME = 'tree' #usually we used names "tree" or "T"
 
@@ -165,22 +154,22 @@ We can do this by filtering through one or more options depending on the wanted 
     - strip pairs; choose which strip pairs to use
  """
 DETECTORS = True #do we filter by detectors
-STRIP_RANGE = True #do we filter by strip range
+STRIP_RANGE = False #do we filter by strip range
 MATCHES = 's'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [2] #1,2,3,4 write all that we want to include
-    detectors_used_s = 'detB_' #string marking for the output
+    DETECTORS_USED = [2, 3] #1,2,3,4 write all that we want to include
+    detectors_used_s = 'detBC_' #string marking for the output
     
     filters_used.append(detectors_used_s)
 
 #bottom and upper front and dE strip number that we let into further calculation                
 if STRIP_RANGE:
     front_low, front_high = STRIP_USED, STRIP_USED
-    dE_low, dE_high = 145,160
+    dE_low, dE_high = 112, 192
     
     strip_range_s = f'E=[{front_low},{front_high}],dE=[{dE_low},{dE_high}]_'
     filters_used.append(strip_range_s)
@@ -210,11 +199,20 @@ with open('matching', 'r') as f:
 
     filters_used.append(strip_pairs_s)
 
+strip_corr_pars = {}
+with open('strip_9be_correction', 'r') as f:
+    for l in f.readlines():
+        l = l.split()
+
+        strip = int(l[0])
+        pars = [ float(x) for x in l[1:] ]
+
+        strip_corr_pars[strip] = pars
 
 # the name of the output file 
 output_suffix = ''.join(filters_used)
 
-out_name = f"single_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
+out_name = f"single_corr_EXP_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
 
         
 """ Defining histograms"""
@@ -247,6 +245,11 @@ h6 = TH1F('Ex\'', f'Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {
 h7 = TH2S('Ex\'-theta', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
 h7_c = TH2S('Ex\'-theta_colour', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h7_c.SetOption("COLZ") # contrast scale
+
+h8 = TH1F('Ex\'\'', f'Ex\'\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
+h9 = TH2S('Ex\'\'-theta', f"theta - Ex\'\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
+h9_c = TH2S('Ex\'\'-theta_colour', f"theta - Ex\'\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
+h9_c.SetOption("COLZ") # contrast scale
 
 
 """FUNCTIONS """
@@ -349,7 +352,9 @@ for s_run in S_RUN_LIST:
         a, b = strip_corr_pars[t.adc[front_number]]
 
         Ex_ = a*Ex + b
-        E_ = (2-a)*t.cnrg[0] - b
+        E_ = (2-a)*t.cnrg[0] + b
+
+        Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
          
         h0.Fill(t.ampl[0]) # amplitude of the detected particle in the front E detector
         h.Fill(t.nrg[0]) # energy of the detected particle in the front E detector
@@ -363,6 +368,9 @@ for s_run in S_RUN_LIST:
         h6.Fill(Ex_) #Excitation energy of the undetected particle
         h7.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
         h7_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
+        h8.Fill(Ex_2) #Excitation energy of the undetected particle
+        h9.Fill(Ex_2, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h9_c.Fill(Ex_2, t.theta[0]) # COLOUR version of h5
         
         if STRIP_HITS:
             for i in range(t.mult):
@@ -389,6 +397,9 @@ h5_c.Write()
 h6.Write()
 h7.Write()
 h7_c.Write()
+h8.Write()
+h9.Write()
+h9_c.Write()
 g.Close()
 print(f"Excitation of {Name_UNDET} from the detection of {Name_DET}, Filters: {output_suffix}  Run: 18-30")
 print("The number of single detections in the input runs:", counter_particles_single)

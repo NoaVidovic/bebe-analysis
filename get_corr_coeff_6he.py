@@ -6,9 +6,9 @@ from ROOT import TFile
 
 STRIP_USED = 47 if len(argv) < 2 else int(argv[1])
 STEP_SIZE = 0.05  # MeV
-SEARCH_WIDTH = 10  # * step_size = search_width in MeV
+SEARCH_WIDTH = 30  # * step_size = search_width in MeV
 
-f = TFile(f'./singles/calib/single_Ex9Be_from9Be_E=[{STRIP_USED},{STRIP_USED}],dE=[112,192]_bestPairs_run18-30.root')
+f = TFile(f'./singles/calib/6he/single_Ex12C_from6He_E=[{STRIP_USED},{STRIP_USED}],dE=[112,192]_bestPairs_run18-30.root')
 h = f.Get('Ex;1')
 
 
@@ -19,7 +19,7 @@ h_data = np.array([-1] + [ h.GetBinContent(i) for i in range(n_bins) ])
 
 zero_point = h.GetXaxis().FindBin(0)  # redni broj bina na energiji od 0 MeV
 state0_nrg = 0  # MeV
-state1_nrg = 2.43  # MeV
+state1_nrg = 4.44  # MeV
 
 
 """ FUNCTIONS """
@@ -85,12 +85,12 @@ def get_fit(search_nrg, peak_cutoff=0.1):
     return mean
 
 E0 = get_fit(state0_nrg, peak_cutoff=0.1)
-E1 = get_fit(state1_nrg, peak_cutoff=0.2)
+E1 = get_fit(state1_nrg, peak_cutoff=0.1)
 
 a = (state1_nrg - state0_nrg) / (E1 - E0)
 b = state0_nrg - a*E0
 
 print(f'{a}\t{b}')
 
-with open('strip_9be_correction', 'a') as f:
+with open('strip_6he_correction', 'a') as f:
     f.write(f'{STRIP_USED}\t{a}\t{b}\n')
