@@ -153,6 +153,8 @@ We can do this by filtering through one or more options depending on the wanted 
     - strip range; choose what range of strip to use
     - strip pairs; choose which strip pairs to use
  """
+det_names = 'ABCD'
+
 DETECTORS = True #do we filter by detectors
 STRIP_RANGE = False #do we filter by strip range
 MATCHES = 's'
@@ -161,8 +163,10 @@ filters_used = [] #field of string markings of all filters used, to add to outpu
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [2, 3] #1,2,3,4 write all that we want to include
-    detectors_used_s = 'detBC_' #string marking for the output
+    DETECTORS_USED = [2, 3, 4] #1,2,3,4 write all that we want to include
+
+    tmp = ''.join([ det_names[i-1] for i in sorted(DETECTORS_USED) ])
+    detectors_used_s = f'det{tmp}_' #string marking for the output
     
     filters_used.append(detectors_used_s)
 
@@ -209,10 +213,20 @@ with open('strip_9be_correction', 'r') as f:
 
         strip_corr_pars[strip] = pars
 
+det_corr_pars = {}
+with open('strip_6he_correction', 'r') as f:
+    for l in f.readlines():
+        l = l.split()
+
+        strip = int(l[0])
+        pars = [ float(x) for x in l[1:] ]
+
+        det_corr_pars[strip] = pars
+
 # the name of the output file 
 output_suffix = ''.join(filters_used)
 
-out_name = f"single_corr_EXP_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
+out_name = f"single_corr_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
 
         
 """ Defining histograms"""
@@ -349,12 +363,21 @@ for s_run in S_RUN_LIST:
 
         #calculate the excitation energy of the undetected particle
         Ex = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, t.cnrg[0], np.deg2rad(t.theta[0]))
-        a, b = strip_corr_pars[t.adc[front_number]]
 
-        Ex_ = a*Ex + b
-        E_ = (2-a)*t.cnrg[0] + b
+        if ptype_DET == 206:
+            a, b = det_corr_pars[t.detector[0]]
 
-        Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
+            Ex_ = a*Ex + b
+            E_ = (2*a - 1) * t.cnrg[0] - 2 * (a - 1) * np.sqrt(Energy_PROJECTILE_HALFtarget) * np.cos(np.deg2rad(t.theta[0])) * np.sqrt(t.cnrg[0]) - b
+
+            Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
+        else:
+            a, b = strip_corr_pars[t.adc[front_number]]
+
+            Ex_ = a*Ex + b
+            E_ = (2*a - 1) * t.cnrg[0] - 2 * (a - 1) * np.sqrt(Energy_PROJECTILE_HALFtarget) * np.cos(np.deg2rad(t.theta[0])) * np.sqrt(t.cnrg[0]) - b
+
+            Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
          
         h0.Fill(t.ampl[0]) # amplitude of the detected particle in the front E detector
         h.Fill(t.nrg[0]) # energy of the detected particle in the front E detector

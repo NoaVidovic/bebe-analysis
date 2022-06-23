@@ -224,7 +224,7 @@ res_energy_E, low_energy_E, high_energy_E  = 5000,0,50 #10keV resolution
 res_energy_dE, low_energy_dE, high_energy_dE  = 3000,0,30 #10keV resolution
 res_energy_Ex, low_energy_Ex, high_energy_Ex  = 1100,-5,50 #50keV resolution
 
-res_theta, low_theta, high_theta  = 550, 10, 65 #0.1 degrees resolution
+res_theta, low_theta, high_theta  = 110, 10, 65 #0.5 degrees resolution
 
 #defining histograms
 h0 = TH1F('AMPLdet', f"Amplitude {Name_DET}", res_ampl, low_ampl, high_ampl) # amplitude of the detected particle in the front E detector

@@ -4,24 +4,29 @@ from scipy.optimize import curve_fit
 from sys import argv
 from ROOT import TFile
 
-det_list = 'ABCD'
+try:
+    IN_NAME = argv[1]
+    SEARCH_NRG = float(argv[2])  # MeV
 
-DET = 2 if len(argv) < 2 else int(argv[1])
-STEP_SIZE = 0.05  # MeV
-SEARCH_WIDTH = 30  # * step_size = search_width in MeV
+    STEP_SIZE = 0.05  # MeV
+    PEAK_CUTOFF = 0.1 if len(argv) < 4 else float(argv[3])
+    SEARCH_WIDTH = 0.5 if len(argv) < 5 else float(argv[4])  # in MeV
+    SEARCH_WIDTH = int(SEARCH_WIDTH / STEP_SIZE)  # in steps
+except:
+    print('arg1: file name')
+    print('arg2: search energy')
+    print('arg3: peak cutoff ratio (optional, default=0.1)')
+    print('arg4: search width (optional, default=0.5 [MeV])')
 
-f = TFile(f'./singles/calib/6he/single_Ex12C_from6He_det{det_list[DET-1]}_bestPairs_run18-30.root')
-h = f.Get('Ex;1')
+f = TFile(IN_NAME)
+h = f.Get("Ex';1")  # if using _corr_ files
 
 
 n_bins = h.GetNbinsX()
 
 # dodajemo -1 na početak liste jer je bin numbering 1-based a ne 0-based
 h_data = np.array([-1] + [ h.GetBinContent(i) for i in range(n_bins) ])
-
 zero_point = h.GetXaxis().FindBin(0)  # redni broj bina na energiji od 0 MeV
-state0_nrg = 0  # MeV
-state1_nrg = 4.44  # MeV
 
 
 """ FUNCTIONS """
@@ -72,7 +77,7 @@ def get_fit(search_nrg, peak_cutoff=0.1):
         i += 1
         peak_index = tmp[i]
 
-    print(f'peak around {search_nrg} MeV: E={nrg(peak_index):.3f}, N={peak_height:.0f}')
+    print(f'peak around {search_nrg:.3f} MeV: E={nrg(peak_index):.3f}, N={peak_height:.0f}')
 
     peak_nbh = np.where(h_data/peak_height >= peak_cutoff)[0]
     peak_nbh = cut(peak_nbh, peak_index)
@@ -86,13 +91,4 @@ def get_fit(search_nrg, peak_cutoff=0.1):
 
     return mean
 
-E0 = get_fit(state0_nrg, peak_cutoff=0.1)
-E1 = get_fit(state1_nrg, peak_cutoff=0.1)
-
-a = (state1_nrg - state0_nrg) / (E1 - E0)
-b = state0_nrg - a*E0
-
-print(f'{a}\t{b}')
-
-with open('strip_6he_correction', 'a') as f:
-    f.write(f'{DET}\t{a}\t{b}\n')
+print(get_fit(SEARCH_NRG, PEAK_CUTOFF))

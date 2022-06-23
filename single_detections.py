@@ -12,6 +12,8 @@ No need to exclude possible interstrip and conflicting events since we are only 
 """ import predefined functions """
 import numpy as np
 
+from el import el_name
+
 from datetime import timedelta
 from sys import argv
 from time import time
@@ -55,16 +57,6 @@ if STRIP_HITS:
 #choosing the projectile-target composition
 Be9_Be9 = True
 
-#choosing the reaction channel
-if Be9_Be9:
-    Ex8Be = False
-    Ex9Be = True
-    Ex10B = False
-    Ex11B = False
-    Ex12B = False
-    Ex12C = False
-    Ex14C = False
-
 """ 
 9Be+9Be projectile-target composition
 REACTION CHANNELS:
@@ -78,84 +70,28 @@ REACTION CHANNELS:
 """
 if Be9_Be9:
     Energy_PROJECTILE_HALFtarget = 53.778 #projectile energy at half target where the reaction approximately occurs
-    Mass_PROJECTILE = 9.0    #projectile mass
-    Name_PROJECTILE = '9Be' #name of the projectile
-    Name_TARGET = '9Be' #name of the target
-    Energy_BEAM = '54' #projectile energy before entering the target
+    ptype_PROJECTILE, ptype_TARGET = 409, 409  # projectile and target particle type
 
-    #9Be(9Be,10Be)8Be reaction
-    if ptype_DET == 410:
-        Mass_DET = 10.0 #mass of the detected particle
-        Name_DET = '10Be' #name of the detected particle
-        
-        Q0 = 5.147 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 8.0 #mass of the undetected particle
-        Name_UNDET = '8Be'  #name of the undetected particle 
+    # Q values for 9Be-9Be interaction depending on detected particle
+    Q_vals = { 410: 5.147, 409: 0.0, 308: -10.299, 307: -0.877, 306: -4.759, 206: 5.104, 204: 17.252 }
 
-    #9Be(9Be,9Be)9Be reaction
-    elif ptype_DET == 409:
-        Mass_DET = 9.0 #mass of the detected particle
-        Name_DET = '9Be' #name of the detected particle
-        
-        Q0 = 0.0 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 9.0 #mass of the undetected particle
-        Name_UNDET = '9Be'  #name of the undetected particle
-        
-    #9Be(9Be,8Li)10B reaction       
-    elif ptype_DET == 308:
-        Mass_DET = 8.0 #mass of the detected particle
-        Name_DET = '8Li' #name of the detected particle
-        
-        Q0 = -10.299 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 10.0 #mass of the undetected particle
-        Name_UNDET = '10B'  #name of the undetected particle
-
-    #9Be(9Be,7Li)11B reaction         
-    elif ptype_DET == 307:
-        Mass_DET = 7.0 #mass of the detected particle
-        Name_DET = '7Li' #name of the detected particle
-        
-        Q0 = -0.877 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 11.0 #mass of the undetected particle
-        Name_UNDET = '11B'  #name of the undetected particle        
-
-    #9Be(9Be,6Li)12B reaction
-    elif ptype_DET == 306:
-        Mass_DET = 6.0 #mass of the detected particle
-        Name_DET = '6Li' #name of the detected particle
-        
-        Q0 = -4.759 #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 12.0 #mass of the undetected particle
-        Name_UNDET = '12B'  #name of the undetected particle
-
-    #9Be(9Be,6He)12C reaction
-    elif ptype_DET == 206:
-        Mass_DET = 6.0 #mass of the detected particle
-        Name_DET = '6He' #name of the detected particle
-        
-        Q0 = 5.104   #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 12.0 #mass of the undetected particle
-        Name_UNDET = '12C'  #name of the undetected particle
-        
-    #9Be(9Be,4He)14C reaction
-    elif ptype_DET == 204:
-        Mass_DET = 4.0 #mass of the detected particle
-        Name_DET = '4He' #name of the detected particle
-        
-        Q0 = 17.252  #Q value of the reaction when all the particles are in their ground states; Q = E_det + E_undet - E_projectile
-        
-        Mass_UNDET = 14.0 #mass of the undetected particle
-        Name_UNDET = '14C'  #name of the undetected particle
-
-    else:
+    if ptype_DET not in Q_vals.keys():
         print('Invalid reaction channel')
         exit(0)
+
+    Mass_PROJECTILE, Mass_TARGET = ptype_PROJECTILE % 100, ptype_TARGET % 100  # projectile and target mass
+    Name_PROJECTILE, Name_TARGET = el_name(ptype_PROJECTILE), el_name(ptype_TARGET)  # projectile and target name
+
+    Energy_BEAM = '54' #projectile energy before entering the target
+
+    Mass_DET = ptype_DET % 100
+    Name_DET = el_name(ptype_DET)
+
+    Mass_UNDET = Mass_PROJECTILE + Mass_TARGET - Mass_DET  # 18 = Mass(9Be) + Mass(9Be)
+    ptype_UNDET = (ptype_PROJECTILE // 100 + ptype_TARGET // 100 - ptype_DET // 100) * 100 + int(Mass_UNDET)
+    Name_UNDET = el_name(ptype_UNDET)
+
+    Q0 = Q_vals[ptype_DET]
 
         
 """ Choosing which particles to use
@@ -164,16 +100,16 @@ We can do this by filtering through one or more options depending on the wanted 
     - strip range; choose what range of strip to use
     - strip pairs; choose which strip pairs to use
  """
-DETECTORS = False #do we filter by detectors
-STRIP_RANGE = True #do we filter by strip range
+DETECTORS = True #do we filter by detectors
+STRIP_RANGE = False #do we filter by strip range
 MATCHES = 's'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [2] #1,2,3,4 write all that we want to include
-    detectors_used_s = 'detB_' #string marking for the output
+    DETECTORS_USED = [4] #1,2,3,4 write all that we want to include
+    detectors_used_s = 'detD_' #string marking for the output
     
     filters_used.append(detectors_used_s)
 
