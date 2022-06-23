@@ -9,14 +9,14 @@ try:
     SEARCH_NRG = float(argv[2])  # MeV
 
     STEP_SIZE = 0.05  # MeV
-    PEAK_CUTOFF = 0.1 if len(argv) < 4 else float(argv[3])
-    SEARCH_WIDTH = 0.5 if len(argv) < 5 else float(argv[4])  # in MeV
+    SEARCH_WIDTH = 0.5 if len(argv) < 4 else float(argv[3])  # in MeV
+    PEAK_CUTOFF = -1 if len(argv) < 5 else float(argv[4])
     SEARCH_WIDTH = int(SEARCH_WIDTH / STEP_SIZE)  # in steps
 except:
     print('arg1: file name')
     print('arg2: search energy')
-    print('arg3: peak cutoff ratio (optional, default=0.1)')
     print('arg4: search width (optional, default=0.5 [MeV])')
+    print('arg3: peak cutoff ratio (optional, default is automatic search)')
 
 f = TFile(IN_NAME)
 h = f.Get("Ex';1")  # if using _corr_ files
@@ -91,4 +91,27 @@ def get_fit(search_nrg, peak_cutoff=0.1):
 
     return mean
 
-print(get_fit(SEARCH_NRG, PEAK_CUTOFF))
+if PEAK_CUTOFF == -1:
+    pc = 0.1
+    
+    while True:
+        try:
+            print(f'peak cutoff = {pc:.2f}: ', end='')
+            x = get_fit(SEARCH_NRG, pc)
+        except:
+            pc += 0.1
+        else:
+            pc -= 0.1
+            break
+
+    while True:
+        try:
+            print(f'peak cutoff = {pc:.2f}: ', end='')
+            x = get_fit(SEARCH_NRG, pc)
+            break
+        except:
+            pc += 0.01
+else:
+    x = get_fit(SEARCH_NRG, PEAK_CUTOFF)
+
+print(x)
