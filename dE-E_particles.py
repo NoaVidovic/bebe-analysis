@@ -34,7 +34,7 @@ def arg(i, default):
     return default if len(argv) < i+1 else argv[i]
 
 strip_front = int(arg(1, 1))
-ALL_PAIRS = bool(arg(2, False))
+ALL_PAIRS = bool(arg(2, True))
 run_start = arg(3, 'run18')
 run_end = arg(4, 'run30')
 

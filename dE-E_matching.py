@@ -161,13 +161,10 @@ for dE in range(129, 193):
 print('Writing amplitude pairs into a file')
 
 keys = sorted(dE_detectors.keys(), key=lambda x: dE_detectors[x], reverse=True)
-s = f'{front}\t{keys[0]}'
-for i in range(1, 4):
-    if dE_detectors[keys[i]] == 0 or dE_detectors[keys[i-1]]/dE_detectors[keys[i]] > 6:
-        s += '\n'
-        break
-    else:
-        s += f'\t{keys[i]}'
+s = f'{front}\t{keys[0]}\t{keys[1]}'
+if dE_detectors[keys[2]] != 0 and dE_detectors[keys[1]]/dE_detectors[keys[2]] <= 6:
+    s += f'\t{keys[2]}'
+s += '\n'
 
 with open('matching', 'a') as f:
     f.write(s)

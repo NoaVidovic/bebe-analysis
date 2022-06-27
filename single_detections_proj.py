@@ -255,8 +255,10 @@ state0_nrg = 0        # MeV
 state1_nrg = 2.43     # MeV
 nrg_half_width = 0.5  # MeV
 
-hE0t = TH1F('N-theta', f'theta - N for particles in the range of {state0_nrg-nrg_half_width}-{state0_nrg+nrg_half_width} MeV', res_theta, low_theta, high_theta)
-hE1t = TH1F('N-theta', f'theta - N for particles in the range of {state1_nrg-nrg_half_width}-{state1_nrg+nrg_half_width} MeV', res_theta, low_theta, high_theta)
+hE0t_B = TH1F('N-theta_B_E=0', f'theta - N for particles in the range of {state0_nrg-nrg_half_width:.2f}-{state0_nrg+nrg_half_width:.2f} MeV on detector B', res_theta, low_theta, high_theta)
+hE1t_B = TH1F('N-theta_B_E=2.43', f'theta - N for particles in the range of {state1_nrg-nrg_half_width:.2f}-{state1_nrg+nrg_half_width:.2f} MeV on detector B', res_theta, low_theta, high_theta)
+hE0t_C = TH1F('N-theta_C_E=0', f'theta - N for particles in the range of {state0_nrg-nrg_half_width:.2f}-{state0_nrg+nrg_half_width:.2f} MeV on detector C', res_theta, low_theta, high_theta)
+hE1t_C = TH1F('N-theta_C_E=2.43', f'theta - N for particles in the range of {state1_nrg-nrg_half_width:.2f}-{state1_nrg+nrg_half_width:.2f} MeV on detector C', res_theta, low_theta, high_theta)
 
 
 """FUNCTIONS """
@@ -358,10 +360,10 @@ for s_run in S_RUN_LIST:
         Ex = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, t.cnrg[0], np.deg2rad(t.theta[0]))
         a, b = strip_corr_pars[t.adc[front_number]]
 
-        Ex_ = a*Ex + b
-        E_ = (2-a)*t.cnrg[0] - b
+        Ex_fit = a*Ex + b
+        E_ = t.cnrg[0] - (a-1) * Ex - b
 
-        Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
+        Ex_ = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
          
         h0.Fill(t.ampl[0]) # amplitude of the detected particle in the front E detector
         h.Fill(t.nrg[0]) # energy of the detected particle in the front E detector
@@ -372,18 +374,24 @@ for s_run in S_RUN_LIST:
         h4.Fill(Ex) #Excitation energy of the undetected particle
         h5.Fill(Ex,t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
         h5_c.Fill(Ex,t.theta[0]) # COLOUR version of h5
-        h6.Fill(Ex_) #Excitation energy of the undetected particle
-        h7.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h7_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
-        h8.Fill(Ex_2) #Excitation energy of the undetected particle
-        h9.Fill(Ex_2, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h9_c.Fill(Ex_2, t.theta[0]) # COLOUR version of h5
+        h6.Fill(Ex_fit) #Excitation energy of the undetected particle
+        h7.Fill(Ex_fit, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h7_c.Fill(Ex_fit, t.theta[0]) # COLOUR version of h5
+        h8.Fill(Ex_) #Excitation energy of the undetected particle
+        h9.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h9_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
         
         if state0_nrg - nrg_half_width <= Ex_ <= state0_nrg + nrg_half_width:
-            hE0t.Fill(t.theta[0])
+            if t.detector[0] == 2:
+                hE0t_B.Fill(t.theta[0])
+            elif t.detector[0] == 3:
+                hE0t_C.Fill(t.theta[0])
 
         if state1_nrg - nrg_half_width <= Ex_ <= state1_nrg + nrg_half_width:
-            hE1t.Fill(t.theta[0])
+            if t.detector[0] == 2:
+                hE1t_B.Fill(t.theta[0])
+            elif t.detector[0] == 3:
+                hE1t_C.Fill(t.theta[0])
 
         
         if STRIP_HITS:
@@ -414,8 +422,10 @@ h7_c.Write()
 h8.Write()
 h9.Write()
 h9_c.Write()
-hE0t.Write()
-hE1t.Write()
+hE0t_B.Write()
+hE1t_B.Write()
+hE0t_C.Write()
+hE1t_C.Write()
 g.Close()
 print(f"Excitation of {Name_UNDET} from the detection of {Name_DET}, Filters: {output_suffix}  Run: 18-30")
 print("The number of single detections in the input runs:", counter_particles_single)

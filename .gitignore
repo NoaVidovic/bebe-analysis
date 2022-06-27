@@ -5,3 +5,6 @@ __pycache__/*
 *.root
 *.png
 *.sh
+
+# personal configs
+pyrightconfig.json

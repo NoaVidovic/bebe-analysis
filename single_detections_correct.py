@@ -44,16 +44,6 @@ if STRIP_HITS:
 #choosing the projectile-target composition
 Be9_Be9 = True
 
-#choosing the reaction channel
-if Be9_Be9:
-    Ex8Be = False
-    Ex9Be = True
-    Ex10B = False
-    Ex11B = False
-    Ex12B = False
-    Ex12C = False
-    Ex14C = False
-
 """ 
 9Be+9Be projectile-target composition
 REACTION CHANNELS:
@@ -163,7 +153,7 @@ filters_used = [] #field of string markings of all filters used, to add to outpu
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [2, 3, 4] #1,2,3,4 write all that we want to include
+    DETECTORS_USED = [2, 3] #1,2,3,4 write all that we want to include
 
     tmp = ''.join([ det_names[i-1] for i in sorted(DETECTORS_USED) ])
     detectors_used_s = f'det{tmp}_' #string marking for the output
@@ -255,14 +245,14 @@ h5 = TH2S('Ex-theta', f"theta - Ex({Name_UNDET}) from {Name_DET} single detectio
 h5_c = TH2S('Ex-theta_colour', f"theta - Ex({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h5_c.SetOption("COLZ") # contrast scale
 
-h6 = TH1F('Ex\'', f'Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
-h7 = TH2S('Ex\'-theta', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
-h7_c = TH2S('Ex\'-theta_colour', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
+h6 = TH1F('Ex_fit', f'Ex_fit({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
+h7 = TH2S('Ex_fit-theta', f"theta - Ex_fit({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
+h7_c = TH2S('Ex_fit-theta_colour', f"theta - Ex_fit({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h7_c.SetOption("COLZ") # contrast scale
 
-h8 = TH1F('Ex\'\'', f'Ex\'\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
-h9 = TH2S('Ex\'\'-theta', f"theta - Ex\'\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
-h9_c = TH2S('Ex\'\'-theta_colour', f"theta - Ex\'\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
+h8 = TH1F('Ex\'', f'Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
+h9 = TH2S('Ex\'-theta', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
+h9_c = TH2S('Ex\'-theta_colour', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h9_c.SetOption("COLZ") # contrast scale
 
 
@@ -364,20 +354,15 @@ for s_run in S_RUN_LIST:
         #calculate the excitation energy of the undetected particle
         Ex = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, t.cnrg[0], np.deg2rad(t.theta[0]))
 
-        if ptype_DET == 206:
-            a, b = det_corr_pars[t.detector[0]]
+        # if ptype_DET == 206:
+        #     a, b = det_corr_pars[t.detector[0]]
+        # else:
+        #     a, b = strip_corr_pars[t.adc[front_number]]
+        a, b = strip_corr_pars[t.adc[front_number]]
 
-            Ex_ = a*Ex + b
-            E_ = (2*a - 1) * t.cnrg[0] - 2 * (a - 1) * np.sqrt(Energy_PROJECTILE_HALFtarget) * np.cos(np.deg2rad(t.theta[0])) * np.sqrt(t.cnrg[0]) - b
-
-            Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
-        else:
-            a, b = strip_corr_pars[t.adc[front_number]]
-
-            Ex_ = a*Ex + b
-            E_ = (2*a - 1) * t.cnrg[0] - 2 * (a - 1) * np.sqrt(Energy_PROJECTILE_HALFtarget) * np.cos(np.deg2rad(t.theta[0])) * np.sqrt(t.cnrg[0]) - b
-
-            Ex_2 = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
+        Ex_fit = a*Ex + b
+        E_ = t.cnrg[0] - (a-1) * Ex - b
+        Ex_ = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
          
         h0.Fill(t.ampl[0]) # amplitude of the detected particle in the front E detector
         h.Fill(t.nrg[0]) # energy of the detected particle in the front E detector
@@ -388,12 +373,12 @@ for s_run in S_RUN_LIST:
         h4.Fill(Ex) #Excitation energy of the undetected particle
         h5.Fill(Ex,t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
         h5_c.Fill(Ex,t.theta[0]) # COLOUR version of h5
-        h6.Fill(Ex_) #Excitation energy of the undetected particle
-        h7.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h7_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
-        h8.Fill(Ex_2) #Excitation energy of the undetected particle
-        h9.Fill(Ex_2, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h9_c.Fill(Ex_2, t.theta[0]) # COLOUR version of h5
+        h6.Fill(Ex_fit) #Excitation energy of the undetected particle
+        h7.Fill(Ex_fit, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h7_c.Fill(Ex_fit, t.theta[0]) # COLOUR version of h5
+        h8.Fill(Ex_) #Excitation energy of the undetected particle
+        h9.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h9_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
         
         if STRIP_HITS:
             for i in range(t.mult):

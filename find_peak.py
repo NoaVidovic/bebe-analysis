@@ -10,8 +10,8 @@ try:
 
     STEP_SIZE = 0.05  # MeV
     SEARCH_WIDTH = 0.5 if len(argv) < 4 else float(argv[3])  # in MeV
-    PEAK_CUTOFF = -1 if len(argv) < 5 else float(argv[4])
     SEARCH_WIDTH = int(SEARCH_WIDTH / STEP_SIZE)  # in steps
+    PEAK_CUTOFF = -1 if len(argv) < 5 else float(argv[4])
 except:
     print('arg1: file name')
     print('arg2: search energy')
@@ -101,7 +101,8 @@ if PEAK_CUTOFF == -1:
         except:
             pc += 0.1
         else:
-            pc -= 0.1
+            if pc > 0.1:
+                pc -= 0.1
             break
 
     while True:
