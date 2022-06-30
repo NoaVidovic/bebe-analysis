@@ -155,14 +155,14 @@ We can do this by filtering through one or more options depending on the wanted 
  """
 DETECTORS = True #do we filter by detectors
 STRIP_RANGE = False #do we filter by strip range
-MATCHES = 's'
+MATCHES = 'a'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [2, 3] #1,2,3,4 write all that we want to include
-    detectors_used_s = 'detBC_' #string marking for the output
+    DETECTORS_USED = [3] #1,2,3,4 write all that we want to include
+    detectors_used_s = 'detC_' #string marking for the output
     
     filters_used.append(detectors_used_s)
 

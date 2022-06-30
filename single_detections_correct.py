@@ -147,13 +147,13 @@ det_names = 'ABCD'
 
 DETECTORS = True #do we filter by detectors
 STRIP_RANGE = False #do we filter by strip range
-MATCHES = 's'
+MATCHES = 'a'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [2, 3] #1,2,3,4 write all that we want to include
+    DETECTORS_USED = [2] #1,2,3,4 write all that we want to include
 
     tmp = ''.join([ det_names[i-1] for i in sorted(DETECTORS_USED) ])
     detectors_used_s = f'det{tmp}_' #string marking for the output
@@ -216,7 +216,7 @@ with open('strip_6he_correction', 'r') as f:
 # the name of the output file 
 output_suffix = ''.join(filters_used)
 
-out_name = f"single_corr_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
+out_name = f"single_corr_ALL_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
 
         
 """ Defining histograms"""

@@ -34,13 +34,13 @@ A function to follow the status of program execution, gives: elapsed time, estim
 """
 def print_time(start_time, step, total):
     elapsed_time = round(time()-start_time)
-    percentage = (i*1.)/n_entries
+    percentage = (step*1.)/total
     remaining_time = 0
     if percentage != 0:
         remaining_time = round(elapsed_time * (1-percentage)/percentage)
         remaining_time = timedelta(0,remaining_time)
     elapsed_time = timedelta(0,elapsed_time)
-    print("{:.1f}%, elapsed {}, remaining {}, event {} out of {}".format(percentage*100, elapsed_time, remaining_time, i, n_entries))
+    print("{:.1f}%, elapsed {}, remaining {}, event {} out of {}".format(percentage*100, elapsed_time, remaining_time, step, total))
 
 
 """  

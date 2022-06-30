@@ -38,6 +38,9 @@ S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8L
 ptype1 = 204 if len(argv) < 2 else int(argv[1])
 ptype2 = 204 if len(argv) < 3 else int(argv[2])
 
+det1_raw = '2' if len(argv) < 5 else argv[3]
+det2_raw = '2' if len(argv) < 5 else argv[4]
+
 TREE_NAME = 'tree' #usually we used names "tree" or "T"
 
 STRIP_HITS = False #do we count the number of hits in different strips
@@ -147,8 +150,8 @@ filters_used = [] #field of string markings of all filters used, to add to outpu
 if DETECTORS: 
     det_names = 'ABCD'
 
-    DET1 = [3] #for the first detected particle
-    DET2 = [3] #for the second detected particle
+    DET1 = [ int(c) for c in det1_raw ] #for the first detected particle
+    DET2 = [ int(c) for c in det2_raw ] #for the second detected particle
     detectors_used_1 = ''.join([ det_names[i-1] for i in sorted(DET1) ]) 
     detectors_used_2 = ''.join([ det_names[i-1] for i in sorted(DET2) ]) 
     
@@ -246,7 +249,9 @@ res_energy_Ex, low_energy_Ex, high_energy_Ex  = 2400,-10,50 #25keV resolution
 res_romano_E, low_romano_E, high_romano_E  = 8000, -20, 60 #10keV resolution
 res_romano_P, low_romano_P, high_romano_P  = 12000, -100, 500 #50keV resolution
 
-res_Q, low_Q, high_Q  = 2000, -25, 25 #25keV resolution
+res_Q, low_Q, high_Q  = 500, -25, 25  # 100 keV resolution
+if ptype1 == ptype2:
+    res_Q = 2000  # 25 keV
 
 res_theta, low_theta, high_theta  = 225, 10, 65 #0.2 degrees resolution
 
@@ -432,7 +437,7 @@ for s_run in S_RUN_LIST:
         
         #use only particles from chosen detectors, #particles can come from different detectors but  DET1<DET2  is always true so there is no need for reverse option
         if DETECTORS:
-            if t.detector[0] not in DET1 and t.detector[1] not in DET2:
+            if t.detector[0] not in DET1 or t.detector[1] not in DET2:
                 continue
             
         for i in range(t.cnc):

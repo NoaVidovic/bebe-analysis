@@ -1,10 +1,11 @@
-data/*
 .ipynb_checkpoints/*
 __pycache__/*
+rektorova_final/*
 
 *.root
 *.png
 *.sh
 
 # personal configs
+matching_hist_gen.py
 pyrightconfig.json
