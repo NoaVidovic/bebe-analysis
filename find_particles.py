@@ -30,7 +30,7 @@ Define program-wide info
 
 
 S_RUN = 'run26' if len(argv) < 2 else argv[1]  # S_RUN is the first argument of the scripts, 'run26' if not given
-CALIB = 'TMIN2Be' # the name of the calibration
+CALIB = 'RUTH90' # the name of the calibration
 S_RUN = f'{S_RUN}_NRG({CALIB})'
 TREE_NAME = 'tree' #usually we used names "tree" or "T"
 

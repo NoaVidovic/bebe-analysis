@@ -28,7 +28,7 @@ DEBUG = False # do we want an output check of certain parts of the code
 
 S_RUN = 'run26' if len(argv) < 2 else argv[1]  # S_RUN is the first argument of the scripts, 'run26' if not given
 
-CALIB = 'TMIN2Be' # the name of the calibration
+CALIB = 'RUTH90' # the name of the calibration;
 PARTICLES = 'particles(E=E,F1-4)'#info about the particle finding process
 S_RUN = f'{S_RUN}_{CALIB}_{PARTICLES}'
 TREE_NAME = 'tree' #usually we used names "tree" or "T"

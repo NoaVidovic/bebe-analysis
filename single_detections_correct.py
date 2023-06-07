@@ -29,10 +29,13 @@ Define program-wide info
 """
 DEBUG = False
 
-S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
+CALIB = 'RUTH90'
+
+S_RUN_LIST = [ f'run{n_run}_{CALIB}_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
 
 ptype_DET = 409 if len(argv) < 2 else int(argv[1])
-STRIP_USED = 47 if len(argv) < 3 else int(argv[2])
+STRIP_FST = 47 if len(argv) < 3 else int(argv[2])
+STRIP_SND = STRIP_FST if len(argv) < 4 else int(argv[3])
 
 TREE_NAME = 'tree' #usually we used names "tree" or "T"
 
@@ -145,8 +148,8 @@ We can do this by filtering through one or more options depending on the wanted 
  """
 det_names = 'ABCD'
 
-DETECTORS = True #do we filter by detectors
-STRIP_RANGE = False #do we filter by strip range
+DETECTORS = False #do we filter by detectors
+STRIP_RANGE = True #do we filter by strip range
 MATCHES = 'a'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
@@ -162,7 +165,7 @@ if DETECTORS:
 
 #bottom and upper front and dE strip number that we let into further calculation                
 if STRIP_RANGE:
-    front_low, front_high = STRIP_USED, STRIP_USED
+    front_low, front_high = STRIP_FST, STRIP_SND
     dE_low, dE_high = 112, 192
     
     strip_range_s = f'E=[{front_low},{front_high}],dE=[{dE_low},{dE_high}]_'
@@ -194,7 +197,7 @@ with open('matching', 'r') as f:
     filters_used.append(strip_pairs_s)
 
 strip_corr_pars = {}
-with open('strip_9be_correction', 'r') as f:
+with open('strip_6he_correction', 'r') as f:
     for l in f.readlines():
         l = l.split()
 
@@ -203,20 +206,10 @@ with open('strip_9be_correction', 'r') as f:
 
         strip_corr_pars[strip] = pars
 
-det_corr_pars = {}
-with open('strip_6he_correction', 'r') as f:
-    for l in f.readlines():
-        l = l.split()
-
-        strip = int(l[0])
-        pars = [ float(x) for x in l[1:] ]
-
-        det_corr_pars[strip] = pars
-
 # the name of the output file 
 output_suffix = ''.join(filters_used)
 
-out_name = f"single_corr_ALL_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
+out_name = f"single_{CALIB}_corr_ALL_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
 
         
 """ Defining histograms"""
@@ -234,7 +227,8 @@ res_theta, low_theta, high_theta  = 550, 10, 65 #0.1 degrees resolution
 h0 = TH1F('AMPLdet', f"Amplitude {Name_DET}", res_ampl, low_ampl, high_ampl) # amplitude of the detected particle in the front E detector
 h = TH1F('Edet_nrg', f"Energies in E detector of {Name_DET}", res_energy_detected, low_energy_detected, high_energy_detected ) # energy of the detected particle in the front E detector
 h1 = TH1F('Edet_cnrg', f"Total energies of {Name_DET}", res_energy_detected, low_energy_detected, high_energy_detected ) # total (corrected) energy of the detected particle
-h1_c = TH1F('E\'det_cnrg', f"Total energies of {Name_DET} (corrected)", res_energy_detected, low_energy_detected, high_energy_detected ) # total (corrected) energy of the detected particle
+h1_scaled = TH1F('E\'det_cnrg', f"Total energies of {Name_DET} (corrected)", res_energy_detected, low_energy_detected, high_energy_detected ) # total (corrected) energy of the detected particle
+h1_moved = TH1F('E\'det_cnrg', f"Total energies of {Name_DET} (corrected)", res_energy_detected, low_energy_detected, high_energy_detected ) # total (corrected) energy of the detected particle
 h2 = TH2S('dE-E_ampl', f"deltaE-E amplitudes of {Name_DET}", res_ampl, low_ampl, high_ampl, res_ampl, low_ampl, high_ampl) # dE-E amplitued graph of detected particles
 h2.SetOption("COLZ") # contrast scale
 h3 = TH2S('dE-E', f"deltaE-E energies of {Name_DET}", res_energy_E, low_energy_E, high_energy_E, res_energy_dE, low_energy_dE, high_energy_dE) # dE-E energy graph of detected particles
@@ -245,15 +239,10 @@ h5 = TH2S('Ex-theta', f"theta - Ex({Name_UNDET}) from {Name_DET} single detectio
 h5_c = TH2S('Ex-theta_colour', f"theta - Ex({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h5_c.SetOption("COLZ") # contrast scale
 
-h6 = TH1F('Ex_fit', f'Ex_fit({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
-h7 = TH2S('Ex_fit-theta', f"theta - Ex_fit({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
-h7_c = TH2S('Ex_fit-theta_colour', f"theta - Ex_fit({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
+h6 = TH1F('Ex\'', f'Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
+h7 = TH2S('Ex\'-theta', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
+h7_c = TH2S('Ex\'-theta_colour', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
 h7_c.SetOption("COLZ") # contrast scale
-
-h8 = TH1F('Ex\'', f'Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target {Name_TARGET}', res_energy_Ex, low_energy_Ex, high_energy_Ex) #Excitation energy of the undetected particle
-h9 = TH2S('Ex\'-theta', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) #Excitation energy of the undetected particle vs angle theta of the detected particle
-h9_c = TH2S('Ex\'-theta_colour', f"theta - Ex\'({Name_UNDET}) from {Name_DET} single detections, Beam {Name_PROJECTILE} {Energy_BEAM} MeV, Target Name_TARGET", res_energy_Ex, low_energy_Ex, high_energy_Ex, res_theta, low_theta, high_theta) # COLOUR version of h5
-h9_c.SetOption("COLZ") # contrast scale
 
 
 """FUNCTIONS """
@@ -354,31 +343,27 @@ for s_run in S_RUN_LIST:
         #calculate the excitation energy of the undetected particle
         Ex = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, t.cnrg[0], np.deg2rad(t.theta[0]))
 
-        # if ptype_DET == 206:
-        #     a, b = det_corr_pars[t.detector[0]]
-        # else:
-        #     a, b = strip_corr_pars[t.adc[front_number]]
         a, b = strip_corr_pars[t.adc[front_number]]
 
-        Ex_fit = a*Ex + b
-        E_ = t.cnrg[0] - (a-1) * Ex - b
-        Ex_ = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_, np.deg2rad(t.theta[0]))
+        # Ex_fit = a*Ex + b
+        # E_ = t.cnrg[0] - (a-1) * Ex - b
+        E_scaled = a*t.cnrg[0]
+        E_moved = a*t.cnrg[0] - b
+        Ex_ = calculate_Ex_single(Q0, Mass_PROJECTILE, Mass_DET, Mass_UNDET, Energy_PROJECTILE_HALFtarget, E_moved, np.deg2rad(t.theta[0]))
          
         h0.Fill(t.ampl[0]) # amplitude of the detected particle in the front E detector
         h.Fill(t.nrg[0]) # energy of the detected particle in the front E detector
         h1.Fill(t.cnrg[0]) # total (corrected) energy of the detected particle
-        h1_c.Fill(E_)  # total (corrected corrected) energy of the detected particle
+        h1_scaled.Fill(E_)  # total (corrected corrected) energy of the detected particle
+        h1_moved.Fill(E_moved)  # total (corrected corrected corrected) energy of the detected particle
         h2.Fill(t.ampl[0],t.ampl[2]) # dE-E amplitued graph of detected particles
         h3.Fill(t.nrg[0],t.nrg[2])  # dE-E energy graph of detected particles
         h4.Fill(Ex) #Excitation energy of the undetected particle
         h5.Fill(Ex,t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
         h5_c.Fill(Ex,t.theta[0]) # COLOUR version of h5
-        h6.Fill(Ex_fit) #Excitation energy of the undetected particle
-        h7.Fill(Ex_fit, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h7_c.Fill(Ex_fit, t.theta[0]) # COLOUR version of h5
-        h8.Fill(Ex_) #Excitation energy of the undetected particle
-        h9.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
-        h9_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
+        h6.Fill(Ex_) #Excitation energy of the undetected particle
+        h7.Fill(Ex_, t.theta[0]) #Excitation energy of the undetected particle vs angle theta of the detected particle
+        h7_c.Fill(Ex_, t.theta[0]) # COLOUR version of h5
         
         if STRIP_HITS:
             for i in range(t.mult):
@@ -396,7 +381,8 @@ g = TFile(f"./singles/{out_name}.root", "recreate")
 h0.Write()
 h.Write()
 h1.Write()
-h1_c.Write()
+h1_scaled.Write()
+h1_moved.Write()
 h2.Write()
 h3.Write()
 h4.Write()
@@ -405,9 +391,6 @@ h5_c.Write()
 h6.Write()
 h7.Write()
 h7_c.Write()
-h8.Write()
-h9.Write()
-h9_c.Write()
 g.Close()
 print(f"Excitation of {Name_UNDET} from the detection of {Name_DET}, Filters: {output_suffix}  Run: 18-30")
 print("The number of single detections in the input runs:", counter_particles_single)

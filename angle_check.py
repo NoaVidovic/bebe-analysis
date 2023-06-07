@@ -28,13 +28,13 @@ run_end = 'run30' if len(argv) < 3 else argv[2]
 run_start = int(run_start[3:])
 run_end = int(run_end[3:])
 
-S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)(E=E,F1-4)_CUT' for n_run in range(run_start, run_end+1) ]
-                
-CALIB = 'TMIN2Be' # string to mark the used calibration
+CALIB = 'RUTH90' # string to mark the used calibration
 REACTION = '9Be+9Be'  # projectile and target
 PARTICLES = '9Be9Be'  # particles that the script filters for
 
-OUT_RUN = f'./angle_check/angle_check_{REACTION}_run{run_start}-{run_end}_TMIN2Be_particles(E=E,F1-4)_{PARTICLES}.root'
+S_RUN_LIST = [ f'run{n_run}_{CALIB}_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT' for n_run in range(run_start, run_end+1) ]
+                
+OUT_RUN = f'./angle_check/angle_check_{REACTION}_run{run_start}-{run_end}_{CALIB}_particles(E=E,F1-4)_{PARTICLES}.root'
 
 
 

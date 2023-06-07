@@ -8,7 +8,9 @@ STRIP_USED = 47 if len(argv) < 2 else int(argv[1])
 STEP_SIZE = 0.05  # MeV
 SEARCH_WIDTH = 10  # * step_size = search_width in MeV
 
-f = TFile(f'./singles/calib/single_Ex9Be_from9Be_E=[{STRIP_USED},{STRIP_USED}],dE=[112,192]_bestPairs_run18-30.root')
+CALIB = 'RUTH90'
+
+f = TFile(f'./singles/calib/{CALIB}/single_Ex9Be_{CALIB}_from9Be_E=[{STRIP_USED},{STRIP_USED}],dE=[112,192]_bestPairs_run18-30.root')
 h = f.Get('Ex;1')
 
 
@@ -92,5 +94,5 @@ b = state0_nrg - a*E0
 
 print(f'{a}\t{b}')
 
-with open('strip_9be_correction', 'a') as f:
+with open(f'strip_9be_correction_{CALIB}', 'a') as f:
     f.write(f'{STRIP_USED}\t{a}\t{b}\n')

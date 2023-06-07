@@ -31,7 +31,8 @@ Define program-wide info
 """
 DEBUG = False
 
-S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
+CALIB = 'RUTH90'
+S_RUN_LIST = [ f'run{n_run}_{CALIB}_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
 
 if len(argv) < 2:
     ptype_DET = 409
@@ -40,7 +41,7 @@ else:
     a1 = int(argv[1])
     if a1 <= 200:
         STRIP_USED = a1
-        ptype_DET = 409
+        ptype_DET = 206
     else:
         ptype_DET = a1
         STRIP_USED = 47 if len(argv) < 3 else int(argv[2])
@@ -100,16 +101,18 @@ We can do this by filtering through one or more options depending on the wanted 
     - strip range; choose what range of strip to use
     - strip pairs; choose which strip pairs to use
  """
-DETECTORS = True #do we filter by detectors
-STRIP_RANGE = False #do we filter by strip range
+DETECTORS = False #do we filter by detectors
+STRIP_RANGE = True #do we filter by strip range
 MATCHES = 's'
 
 filters_used = [] #field of string markings of all filters used, to add to output file name
 output_suffix = '' #string marking of all filters used, to add to output file name
 #choose which detectors to use
 if DETECTORS: 
-    DETECTORS_USED = [4] #1,2,3,4 write all that we want to include
-    detectors_used_s = 'detD_' #string marking for the output
+    DETECTORS_USED = [1] #1,2,3,4 write all that we want to include
+
+    tmp = ''.join([ 'ABCD'[i-1] for i in sorted(DETECTORS_USED) ])
+    detectors_used_s = f'det{tmp}_' #string marking for the output
     
     filters_used.append(detectors_used_s)
 
@@ -150,7 +153,7 @@ with open('matching', 'r') as f:
 # the name of the output file 
 output_suffix = ''.join(filters_used)
 
-out_name = f"single_Ex{Name_UNDET}_from{Name_DET}_{output_suffix}run18-30"
+out_name = f"single_Ex{Name_UNDET}_{CALIB}_from{Name_DET}_{output_suffix}run18-30"
 
         
 """ Defining histograms"""

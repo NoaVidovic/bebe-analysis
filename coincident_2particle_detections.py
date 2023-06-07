@@ -33,7 +33,8 @@ Define program-wide info
 """
 DEBUG = False
 
-S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
+CALIB = 'RUTH90'
+S_RUN_LIST = [ f'run{n_run}_{CALIB}_particles(E=E,F1-4)_ptype(4He,6He,6Li,7Li,8Li,9Be,10Be)_CUT_cnrg' for n_run in range(18, 30) ]
 
 ptype1 = 204 if len(argv) < 2 else int(argv[1])
 ptype2 = 204 if len(argv) < 3 else int(argv[2])
@@ -236,7 +237,7 @@ if REMOVE_CONFLICTS:
 filters_used.append("cnc=2_")
 
 output_suffix = ''.join(filters_used)
-out_name = f"cnc/coinc_{output_suffix}run18-30.root"
+out_name = f"cnc/coinc_{CALIB}_{output_suffix}run18-30.root"
 
 
     

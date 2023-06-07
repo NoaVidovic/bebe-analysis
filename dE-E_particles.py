@@ -41,11 +41,10 @@ run_end = arg(4, 'run30')
 run_start = int(run_start[3:])
 run_end = int(run_end[3:])
 
-S_RUN_LIST = [ f'run{n_run}_TMIN2Be_particles(E=E,F1-4)' for n_run in range(run_start, run_end+1) ]
-                
-CALIB = 'TMIN2Be' #string to mark the used calibration
+CALIB = 'RUTH90' #string to mark the used calibration
+S_RUN_LIST = [ f'run{n_run}_{CALIB}_particles(E=E,F1-4)' for n_run in range(run_start, run_end+1) ]
 
-OUT_RUN = f'./hist_particles/run{run_start}-{run_end}_TMIN2Be_particles(E=E,F1-4)'
+OUT_RUN = f'./hist_particles/run{run_start}-{run_end}_{CALIB}_particles(E=E,F1-4)'
 TREE_NAME = 'tree' #usually we used names "tree" or "T"
 
 # do we have energies of the hits, and are only E detectors calibrated (HAS_ENERGY_E = True) or are all detectors calibrated (HAS_ENERGY = True)

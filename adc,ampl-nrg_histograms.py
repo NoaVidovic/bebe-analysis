@@ -95,9 +95,9 @@ def write_hists(hists):
 
 
 """open the file and get the tree"""
-myfile = TFile('{}.root'.format(S_RUN)) #open
+myfile = TFile('./data/{}.root'.format(S_RUN)) #open
 #myfile.ls() #check the file contents
-t = myfile.Get('{}'.format(TREE_NAME))  #get the tree
+t = myfile.Get(TREE_NAME)  #get the tree
 #t.Print() #check the tree contents
     
 
